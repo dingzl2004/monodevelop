@@ -391,7 +391,8 @@ namespace MonoDevelop.Ide.BuildOutputView
 		public void UpdateJumpToHandler (CommandInfo cinfo)
 		{
 			var selectedNode = treeView.SelectedRow as BuildOutputNode;
-			cinfo.Visible = cinfo.Enabled = selectedNode?.NodeType == BuildOutputNodeType.Warning || selectedNode?.NodeType == BuildOutputNodeType.Error;
+			cinfo.Visible = cinfo.Enabled = (treeView.SelectedRows?.Length ?? 0) == 1 &&
+				(selectedNode?.NodeType == BuildOutputNodeType.Warning || selectedNode?.NodeType == BuildOutputNodeType.Error);
 			if (cinfo.Visible)
 				cinfo.Text = GettextCatalog.GetString ("_Jump To {0}", selectedNode.NodeType.ToString ());
 		}
@@ -444,9 +445,36 @@ namespace MonoDevelop.Ide.BuildOutputView
 				var end = Math.Max (selection.SelectionStart, selection.SelectionEnd);
 				Clipboard.SetText (selection.Node.Message.Substring (init, end - init));
 			} else {
-				var selectedNode = treeView.SelectedRow as BuildOutputNode;
-				if (selectedNode != null) {
-					ClipboardCopy (selectedNode);
+				HashSet<BuildOutputNode> parentsCopied = new HashSet<BuildOutputNode> ();
+				StringBuilder clipboardText = null;
+				for (int i = 0; i < treeView.SelectedRows.Length; i++) {
+					var selectedRow = treeView.SelectedRows [i] as BuildOutputNode;
+					if (selectedRow != null) {
+						var node = selectedRow;
+						bool copyIt = true;
+
+						// Check we haven't copied already this node via a parent
+						while (node != null) {
+							if (parentsCopied.Contains (node)) {
+								copyIt = false;
+								break;
+							}
+							node = node.Parent;
+						}
+
+						if (copyIt) {
+							parentsCopied.Add (selectedRow);
+							if (clipboardText == null) {
+								clipboardText = new StringBuilder (selectedRow.ToString (true));
+							} else {
+								clipboardText.Append (selectedRow.ToString (true));
+							}
+						}
+					}
+				}
+
+				if (clipboardText != null) {
+					Clipboard.SetText (clipboardText.ToString ());
 				}
 			}
 		}
