@@ -56,12 +56,12 @@ namespace MonoDevelop.CSharp.Refactoring
 				del ();
 		}
 
-		protected override void Update (CommandArrayInfo ainfo)
+		protected override async void Update (CommandArrayInfo ainfo)
 		{
 			var doc = IdeApp.Workbench.ActiveDocument;
-			if (doc == null || doc.FileName == FilePath.Null || doc.ParsedDocument == null)
+			if (doc == null || doc.FileName == FilePath.Null || doc.AnalysisDocument == null)
 				return;
-			var semanticModel = doc.ParsedDocument.GetAst<SemanticModel> ();
+			var semanticModel = await doc.AnalysisDocument.GetSemanticModelAsync ();
 			if (semanticModel == null)
 				return;
 			var task = RefactoringSymbolInfo.GetSymbolInfoAsync (doc, doc.Editor);
