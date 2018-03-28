@@ -205,7 +205,7 @@ namespace MonoDevelop.CSharpBinding
 			var widget = new TestCompletionWidget (ext.Editor, ext.DocumentContext);
 			listWindow.CompletionWidget = widget;
 			listWindow.CodeCompletionContext = widget.CurrentCodeCompletionContext;
-			var sm = ext.DocumentContext.ParsedDocument.GetAst<SemanticModel> ();
+			var sm = await ext.DocumentContext.AnalysisDocument.GetSemanticModelAsync();
 
 			var t = sm.Compilation.GetTypeByMetadataName (type);
 			var foundMember = t.GetMembers().First (m => m.Name == member);

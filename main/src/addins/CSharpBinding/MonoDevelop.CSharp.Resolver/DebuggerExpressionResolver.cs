@@ -55,7 +55,7 @@ namespace MonoDevelop.CSharp.Resolver
 				result = GetInfo (compilationUnit, null, offset, default(CancellationToken));
 			} else {
 				compilationUnit = await analysisDocument.GetCSharpSyntaxRootAsync (cancellationToken).ConfigureAwait (false);
-				var semantic = document.ParsedDocument?.GetAst<SemanticModel> ();
+				var semantic = await analysisDocument.GetSemanticModelAsync (cancellationToken);
 				if (semantic == null) {
 					semantic = await analysisDocument.GetSemanticModelAsync (cancellationToken).ConfigureAwait (false);
 				}
